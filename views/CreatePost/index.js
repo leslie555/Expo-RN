@@ -74,7 +74,7 @@
 
 
 import React, { Component } from 'react'
-import { StyleSheet, View, PanResponder, Text, Dimensions } from 'react-native'
+import { StyleSheet, View, PanResponder, Text, Dimensions,TouchableOpacity } from 'react-native'
 
 const roundSize = 5  // 圆的大小
 const width = Dimensions.get('window').width // 设备宽度
@@ -83,8 +83,10 @@ export default class App extends Component {
   constructor(props) {
     super(props)
     this.state = {
-      start: 0, // 起始坐标
-      end: width - roundSize, // 结束坐标
+      // start: 0, // 起始坐标
+      start: 0,
+      end: width -40,
+      // end: width - roundSize, // 结束坐标
       range: 1000,  // 最大价格
       endPrice: '不限',  // 结束价格
       startPrice: 0 // 起始价格
@@ -140,8 +142,8 @@ export default class App extends Component {
         if (end < start) {
           end = start + 30
         }
-        if(end > width - roundSize) {
-          end = width - roundSize
+        if(end > width-40 - roundSize) {
+          end = width- 40 
         }
         let endPrice = Math.floor(end / (width - roundSize) * range) > range - 1 ? '不限' : Math.floor(end / (width - roundSize) * range)
         this.setState({
@@ -158,16 +160,32 @@ export default class App extends Component {
     let { start, end, range, startPrice, endPrice } = this.state
     return (
       <View style={styles.container}>
-        <View style={[{ position: 'absolute' }, { left: end }, { top: -3 }]}><Text>{endPrice !== '不限' ? `￥${endPrice}` : endPrice}</Text></View>
-        <View style={{ flexDirection: 'row' }}>
-          <View style={[styles.progressContainer, { backgroundColor: 'red' }, { width: start }]}></View>
-          <View style={[styles.progressContainer, { width: width - start - (width - end) }]}></View>
-          <View style={[styles.progressContainer, { backgroundColor: '#eee' }, { width: width - end }]}></View>
+        <View style={[styles.btnView,styles.showDay]}><Text style={styles.day}>空置>20天</Text></View>
+
+
+        <View style={styles.slider}>
+          <View style={[{ position: 'absolute' }, { left: end-20, zIndex: 999 }, { top: 20 }]}>
+            <Text>{endPrice !== '不限' ? `￥${endPrice}` : endPrice}</Text>
+          </View>
+          
+          <View style={styles.track}>
+            <View style={[styles.ProgressLeft, {width: start}]}></View>
+            <View style={[styles.progressCenter, { width: end-start }]}></View>
+            <View style={[styles.ProgressRight, { width: width -40 - end }]}></View>
+          </View>
+
+          <View style={[{ position: 'absolute' }, { left: start, zIndex: 999 }, { top: 60 }]}>
+            <Text>￥{startPrice}</Text>
+          </View>
+
+          <View style={[styles.circleStart, { left: start - 20 }]} {...this.panResponderStart.panHandlers}></View>
+          <View style={[styles.circleEnd, { left: end-20 }]} {...this.panResponderEnd.panHandlers}></View>
         </View>
-        <View style={[{ position: 'absolute' }, { left: start }, { top: 50 }]}><Text>￥{startPrice}</Text></View>
-        <View style={[styles.circle, { left: start }]} {...this.panResponderStart.panHandlers}>
-        </View>
-        <View style={[styles.circle, { left: end }]} {...this.panResponderEnd.panHandlers}>
+
+
+        <View style={styles.btnView}>
+          <TouchableOpacity style={styles.btn}><Text style={styles.btnText}>重置</Text></TouchableOpacity>
+          <TouchableOpacity style={[styles.btn,styles.sure]}><Text style={styles.btnText}>确定筛选</Text></TouchableOpacity>
         </View>
       </View>
     )
@@ -176,15 +194,62 @@ export default class App extends Component {
 
 const styles = StyleSheet.create({
   container: {
-    marginTop: 200,
-    height: 70,
-    justifyContent: 'center',
-    alignItems: 'center',
+    width: width,
+    height: '100%',
+    flex:1,
     backgroundColor: '#fff',
   },
-  progressContainer: {
+  showDay: {
+    height: 80
+  },
+  day: {
+    fontSize: 20
+  },
+  btnView: {
+    marginTop: 50,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  sure: {
+    marginLeft: 20
+  },
+  btn: {
     backgroundColor: '#3759F3',
-    height: 4
+    width: 100,
+    height: 50,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center'
+  }, 
+  btnText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 20
+  },
+  slider: {
+    backgroundColor: '#ccc',
+    height: 100,
+    marginHorizontal: 20,
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  track: {
+    // flex: 1,
+    height: 4,
+    flexDirection: 'row'
+    // backgroundColor: 'pink'
+  },
+  ProgressLeft: {
+    backgroundColor:'red',
+  },  
+  ProgressRight: {
+    backgroundColor:'orange',
+  }, 
+  progressCenter: {
+    backgroundColor: '#3759F3',
+    // height: 4
   },
   // circle: {
   //   position: 'absolute',
@@ -197,16 +262,25 @@ const styles = StyleSheet.create({
   //   shadowOpacity: 0.9,
   //   backgroundColor: '#ccc',
   // }
-  circle: {
+  circleStart: {
     position: 'absolute',
-    top:0,
+    top:50,
     width: 40,
     height: 40,
-    borderTopLeftRadius: [{x:32, y:22}],
-    borderTopRightRadius: 0,
-    borderBottomLeftRadius:  22 / 32,
-    borderBottomRightRadius:  20 / 20,
+    borderRadius: 20,
+    // borderTopLeftRadius: 32/22,
+    // borderTopRightRadius: 0,
+    // borderBottomLeftRadius:  22 / 32,
+    // borderBottomRightRadius:  20 / 20,
     backgroundColor: '#49f'
     // transform:  [{rotate:'135deg'}]
+  },
+  circleEnd: {
+    position: 'absolute',
+    top:10,
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: '#49f'
   }
 })
