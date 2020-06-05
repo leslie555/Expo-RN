@@ -76,7 +76,7 @@
 import React, { Component } from 'react'
 import { StyleSheet, View, PanResponder, Text, Dimensions,TouchableOpacity } from 'react-native'
 
-const roundSize = 5  // 圆的大小
+const roundSize = 0  // 圆的大小
 const width = Dimensions.get('window').width // 设备宽度
 export default class App extends Component {
 
@@ -87,8 +87,8 @@ export default class App extends Component {
       start: 0,
       end: width -40,
       // end: width - roundSize, // 结束坐标
-      range: 1000,  // 最大价格
-      endPrice: '不限',  // 结束价格
+      range: 100,  // 最大价格
+      endPrice: '90+',  // 结束价格
       startPrice: 0 // 起始价格
     }
   }
@@ -115,7 +115,7 @@ export default class App extends Component {
         if(start > width) { // 保证开始价格不会超过最大值
           start = width
         }
-        let startPrice = Math.floor(start / width * range) // 计算开始价格显示值
+        let startPrice = Math.floor(start / (width - 40) * range) // 计算开始价格显示值
         if (start === 0) { 
           startPrice = 0
         }
@@ -137,15 +137,17 @@ export default class App extends Component {
         this.forceUpdate()
       },
       onPanResponderMove: (evt, gestureState) => { // 结束的拖动事件
+        console.log('xxx', gestureState)
+        // gestureState.numberActiveTouches = 2 // 设置有效触摸点
         let { start, range } = this.state
         let end = gestureState.moveX
         if (end < start) {
           end = start + 30
         }
-        if(end > width-40 - roundSize) {
+        if(end > width- 40 - roundSize) {
           end = width- 40 
         }
-        let endPrice = Math.floor(end / (width - roundSize) * range) > range - 1 ? '不限' : Math.floor(end / (width - roundSize) * range)
+        let endPrice = Math.floor(end / (width - 40) * range) >= range - 10 ? '90+' : Math.floor(end / (width - 40) * range)
         this.setState({
           end,
           endPrice
@@ -165,21 +167,36 @@ export default class App extends Component {
 
         <View style={styles.slider}>
           <View style={[{ position: 'absolute' }, { left: end-20, zIndex: 999 }, { top: 20 }]}>
-            <Text>{endPrice !== '不限' ? `￥${endPrice}` : endPrice}</Text>
+            <Text>{endPrice !== '90+' ? endPrice : endPrice}</Text>
           </View>
           
+          <View style={styles.rulerCon}>
+            <View style={styles.ruler}></View>
+            <View style={styles.ruler}></View>
+            <View style={styles.ruler}></View>
+            <View style={styles.ruler}></View>
+            <View style={styles.ruler}></View>
+            {/* <View style={styles.ruler}></View>
+            <View style={styles.ruler}></View> */}
+          </View>
+
           <View style={styles.track}>
             <View style={[styles.ProgressLeft, {width: start}]}></View>
             <View style={[styles.progressCenter, { width: end-start }]}></View>
             <View style={[styles.ProgressRight, { width: width -40 - end }]}></View>
           </View>
 
-          <View style={[{ position: 'absolute' }, { left: start, zIndex: 999 }, { top: 60 }]}>
-            <Text>￥{startPrice}</Text>
+          <View style={[{ position: 'absolute' }, { left: start - 5, zIndex: 999 }, { top: 65 }]}>
+            <Text>{startPrice}</Text>
           </View>
 
-          <View style={[styles.circleStart, { left: start - 20 }]} {...this.panResponderStart.panHandlers}></View>
-          <View style={[styles.circleEnd, { left: end-20 }]} {...this.panResponderEnd.panHandlers}></View>
+          <View style={[styles.touchArea, { left: start - 20 }]} {...this.panResponderStart.panHandlers}>
+            <View style={styles.circleStart} ></View>
+          </View>
+         
+          <View style={[styles.touchArea, { left: end - 20, justifyContent: 'flex-start' }]}  {...this.panResponderEnd.panHandlers}>
+            <View style={styles.circleEnd}></View>
+          </View>
         </View>
 
 
@@ -235,11 +252,23 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
+  rulerCon: {
+    width: '100%',
+    position: 'absolute',
+    top: 30,
+    display: 'flex',
+    flexDirection: 'row',
+    justifyContent: "space-around"
+  },
+  ruler: {
+    width: 2,
+    height: 20,
+    backgroundColor: '#666'
+  },
   track: {
     // flex: 1,
     height: 4,
     flexDirection: 'row'
-    // backgroundColor: 'pink'
   },
   ProgressLeft: {
     backgroundColor:'red',
@@ -249,7 +278,6 @@ const styles = StyleSheet.create({
   }, 
   progressCenter: {
     backgroundColor: '#3759F3',
-    // height: 4
   },
   // circle: {
   //   position: 'absolute',
@@ -262,21 +290,27 @@ const styles = StyleSheet.create({
   //   shadowOpacity: 0.9,
   //   backgroundColor: '#ccc',
   // }
-  circleStart: {
+  touchArea: {
+    width: 40, 
+    height: 100, 
+    backgroundColor: 'rgba(255,255,255,0)',
     position: 'absolute',
-    top:50,
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+  },
+  circleStart: {
+    // top:59,
     width: 40,
     height: 40,
-    borderRadius: 20,
-    // borderTopLeftRadius: 32/22,
-    // borderTopRightRadius: 0,
-    // borderBottomLeftRadius:  22 / 32,
-    // borderBottomRightRadius:  20 / 20,
-    backgroundColor: '#49f'
-    // transform:  [{rotate:'135deg'}]
+    // borderRadius: 20,
+    borderTopLeftRadius: 32,
+    borderTopRightRadius: 0,
+    borderBottomLeftRadius:  22,
+    borderBottomRightRadius:  20,
+    backgroundColor: '#49f',
+    transform:  [{rotate:'-45deg'}]
   },
   circleEnd: {
-    position: 'absolute',
     top:10,
     width: 40,
     height: 40,
